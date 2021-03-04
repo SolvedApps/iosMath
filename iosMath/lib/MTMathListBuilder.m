@@ -4,7 +4,7 @@
 //
 //  Created by Kostub Deshmukh on 8/28/13.
 //  Copyright (C) 2013 MathChat
-//   
+//
 //  This software may be modified and distributed under the terms of the
 //  MIT license. See the LICENSE file for details.
 //
@@ -500,12 +500,6 @@ NSString *const MTParseError = @"ParseError";
         mathColor.colorString = [self readColor];
         mathColor.innerList = [self buildInternal:true];
         return mathColor;
-    } else if ([command isEqualToString:@"colorbox"]) {
-        // A color command has 2 arguments
-        MTMathColorbox* mathColorbox = [[MTMathColorbox alloc] init];
-        mathColorbox.colorString = [self readColor];
-        mathColorbox.innerList = [self buildInternal:true];
-        return mathColorbox;
     } else {
         NSString* errorMessage = [NSString stringWithFormat:@"Invalid command \\%@", command];
         [self setError:MTParseErrorInvalidCommand message:errorMessage];
