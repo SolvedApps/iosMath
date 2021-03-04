@@ -4,7 +4,7 @@
 //
 //  Created by Kostub Deshmukh on 8/26/13.
 //  Copyright (C) 2013 MathChat
-//   
+//
 //  This software may be modified and distributed under the terms of the
 //  MIT license. See the LICENSE file for details.
 //
@@ -73,7 +73,6 @@ typedef NS_ENUM(NSUInteger, MTMathAtomType)
     /// Denotes style changes during rendering.
     kMTMathAtomStyle,
     kMTMathAtomColor,
-    kMTMathAtomColorbox,
     
     // Atoms after this point are not part of TeX and do not have the usual structure.
     
@@ -341,23 +340,6 @@ typedef NS_ENUM(unsigned int, MTLineStyle)  {
 
 @end
 
-/** An atom representing an colorbox element.
- @note None of the usual fields of the `MTMathAtom` apply even though this
- class inherits from `MTMathAtom`. i.e. it is meaningless to have a value
- in the nucleus, subscript or superscript fields. */
-@interface MTMathColorbox : MTMathAtom
-
-/// Creates an empty color with a nil environment
-- (instancetype) init NS_DESIGNATED_INITIALIZER;
-
-/** The style represented by this object. */
-@property (nonatomic, nullable) NSString* colorString;
-
-/// The inner math list
-@property (nonatomic, nullable) MTMathList* innerList;
-
-@end
-
 /** An atom representing an table element. This atom is not like other
  atoms and is not present in TeX. We use it to represent the `\halign` command
  in TeX with some simplifications. This is used for matrices, equation
@@ -453,7 +435,7 @@ typedef NS_ENUM(NSInteger, MTColumnAlignment) {
  @throws NSInvalidArgumentException if the atom is `nil` */
 - (void) addAtom:(MTMathAtom*) atom;
 
-/** Inserts an atom at the given index. If index is already occupied, the objects at index and beyond are 
+/** Inserts an atom at the given index. If index is already occupied, the objects at index and beyond are
  shifted by adding 1 to their indices to make room.
  
  @param atom The atom to be inserted. This cannot be `nil` and cannot have the type `kMTMathAtomBoundary`.

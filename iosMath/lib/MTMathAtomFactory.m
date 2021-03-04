@@ -4,7 +4,7 @@
 //
 //  Created by Kostub Deshmukh on 8/28/13.
 //  Copyright (C) 2013 MathChat
-//   
+//
 //  This software may be modified and distributed under the terms of the
 //  MIT license. See the LICENSE file for details.
 //
@@ -76,13 +76,10 @@ NSString *const MTSymbolDegree = @"\u00B0"; // \circ
     return [[MTLargeOperator alloc] initWithValue:name limits:limits];
 }
 
-+ (nullable MTMathAtom *)atomForCharacter:(unichar)ch
++ (MTMathAtom *)atomForCharacter:(unichar)ch
 {
     NSString *chStr = [NSString stringWithCharacters:&ch length:1];
-    if (ch > 0x0410 && ch < 0x044F){
-        // show basic cyrillic alphabet. Latin Modern Math font is not good for cyrillic symbols
-        return [MTMathAtom atomWithType:kMTMathAtomOrdinary value:chStr];
-    } else if (ch < 0x21 || ch > 0x7E) {
+    if (ch < 0x21 || ch > 0x7E) {
         // skip non ascii characters and spaces
         return nil;
     } else if (ch == '$' || ch == '%' || ch == '#' || ch == '&' || ch == '~' || ch == '\'') {
@@ -137,7 +134,7 @@ NSString *const MTSymbolDegree = @"\u00B0"; // \circ
     return list;
 }
 
-+ (nullable MTMathAtom *)atomForLatexSymbolName:(NSString *)symbolName
++ (MTMathAtom *)atomForLatexSymbolName:(NSString *)symbolName
 {
     NSParameterAssert(symbolName);
     NSDictionary* aliases = [MTMathAtomFactory aliases];
@@ -157,7 +154,7 @@ NSString *const MTSymbolDegree = @"\u00B0"; // \circ
     return nil;
 }
 
-+ (nullable NSString*) latexSymbolNameForAtom:(MTMathAtom*) atom
++ (NSString*) latexSymbolNameForAtom:(MTMathAtom*) atom
 {
     if (atom.nucleus.length == 0) {
         return nil;
@@ -184,7 +181,7 @@ NSString *const MTSymbolDegree = @"\u00B0"; // \circ
     return commands.allKeys;
 }
 
-+ (nullable MTAccent*) accentWithName:(NSString*) accentName
++ (MTAccent*) accentWithName:(NSString*) accentName
 {
     NSDictionary<NSString*, NSString*> *accents = [MTMathAtomFactory accents];
     NSString* accentValue = accents[accentName];
@@ -201,7 +198,7 @@ NSString *const MTSymbolDegree = @"\u00B0"; // \circ
     return dict[accent.nucleus];
 }
 
-+ (nullable MTMathAtom *)boundaryAtomForDelimiterName:(NSString *)delimName
++ (MTMathAtom *)boundaryAtomForDelimiterName:(NSString *)delimName
 {
     NSDictionary<NSString*, NSString*>* delims = [MTMathAtomFactory delimiters];
     NSString* delimValue = delims[delimName];
@@ -223,7 +220,7 @@ NSString *const MTSymbolDegree = @"\u00B0"; // \circ
 + (MTFontStyle)fontStyleWithName:(NSString *)fontName {
     NSDictionary<NSString*, NSNumber*>* fontStyles = [self fontStyles];
     NSNumber* style = fontStyles[fontName];
-    if (style == nil) {
+    if (!style) {
         return NSNotFound;
     }
     return style.integerValue;
@@ -279,7 +276,7 @@ NSString *const MTSymbolDegree = @"\u00B0"; // \circ
     return [self fractionWithNumerator:num denominator:denom];
 }
 
-+ (nullable MTMathAtom *)tableWithEnvironment:(NSString *)env rows:(NSArray<NSArray<MTMathList *> *> *)rows error:(NSError * _Nullable __autoreleasing *)error
++ (MTMathAtom *)tableWithEnvironment:(NSString *)env rows:(NSArray<NSArray<MTMathList *> *> *)rows error:(NSError * _Nullable __autoreleasing *)error
 {
     MTMathTable* table = [[MTMathTable alloc] initWithEnvironment:env];
     for (int i = 0; i < rows.count; i++) {
@@ -333,16 +330,14 @@ NSString *const MTSymbolDegree = @"\u00B0"; // \circ
     } else if ([env isEqualToString:@"eqalign"] || [env isEqualToString:@"split"] || [env isEqualToString:@"aligned"]) {
         if (table.numColumns != 2) {
             NSString* message = [NSString stringWithFormat:@"%@ environment can only have 2 columns", env];
-            if (error != nil) {
-                *error = [NSError errorWithDomain:MTParseError code:MTParseErrorInvalidNumColumns userInfo:@{ NSLocalizedDescriptionKey : message }];
-            }
+            *error = [NSError errorWithDomain:MTParseError code:MTParseErrorInvalidNumColumns userInfo:@{ NSLocalizedDescriptionKey : message }];
             return nil;
         }
         // Add a spacer before each of the second column elements. This is to create the correct spacing for = and other releations.
         MTMathAtom* spacer = [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@""];
         for (int i = 0; i < table.cells.count; i++) {
             NSArray<MTMathList*>* row = table.cells[i];
-            if (row.count > 1) {
+            if (row.count >= 1) {
                 [row[1] insertAtom:spacer atIndex:0];
             }
         }
@@ -354,9 +349,7 @@ NSString *const MTSymbolDegree = @"\u00B0"; // \circ
     } else if ([env isEqualToString:@"displaylines"] || [env isEqualToString:@"gather"]) {
         if (table.numColumns != 1) {
             NSString* message = [NSString stringWithFormat:@"%@ environment can only have 1 column", env];
-            if (error != nil) {
-                *error = [NSError errorWithDomain:MTParseError code:MTParseErrorInvalidNumColumns userInfo:@{ NSLocalizedDescriptionKey : message }];
-            }
+            *error = [NSError errorWithDomain:MTParseError code:MTParseErrorInvalidNumColumns userInfo:@{ NSLocalizedDescriptionKey : message }];
             return nil;
         }
         table.interRowAdditionalSpacing = 1;
@@ -366,9 +359,7 @@ NSString *const MTSymbolDegree = @"\u00B0"; // \circ
     } else if ([env isEqualToString:@"eqnarray"]) {
         if (table.numColumns != 3) {
             NSString* message = @"eqnarray environment can only have 3 columns";
-            if (error != nil) {
-                *error = [NSError errorWithDomain:MTParseError code:MTParseErrorInvalidNumColumns userInfo:@{ NSLocalizedDescriptionKey : message }];
-            }
+            *error = [NSError errorWithDomain:MTParseError code:MTParseErrorInvalidNumColumns userInfo:@{ NSLocalizedDescriptionKey : message }];
             return nil;
         }
         table.interRowAdditionalSpacing = 1;
@@ -380,9 +371,7 @@ NSString *const MTSymbolDegree = @"\u00B0"; // \circ
     } else if ([env isEqualToString:@"cases"]) {
         if (table.numColumns != 2) {
             NSString* message = @"cases environment can only have 2 columns";
-            if (error != nil) {
-                *error = [NSError errorWithDomain:MTParseError code:MTParseErrorInvalidNumColumns userInfo:@{ NSLocalizedDescriptionKey : message }];
-            }
+            *error = [NSError errorWithDomain:MTParseError code:MTParseErrorInvalidNumColumns userInfo:@{ NSLocalizedDescriptionKey : message }];
             return nil;
         }
         table.interRowAdditionalSpacing = 0;
@@ -663,6 +652,28 @@ NSString *const MTSymbolDegree = @"\u00B0"; // \circ
                      @"jmath" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\U0001D6A5"],
                      @"partial" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\U0001D715"],
                      
+                     // Polish signs
+                     @"Aogonek" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u0104"],
+                     @"aogonek" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u0105"],
+                     @"Ckreska" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u0106"],
+                     @"ckreska" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u0107"],
+                     @"Eogonek" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u0118"],
+                     @"eogonek" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u0119"],
+                     @"Lkreska" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u0141"],
+                     @"lkreska" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u0142"],
+                     @"Nkreska" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u0143"],
+                     @"nkreska" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u0144"],
+                     @"Okreska" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u00D3"],
+                     @"okreska" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u00F3"],
+                     @"Skreska" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u015A"],
+                     @"skreska" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u015B"],
+                     @"Zkreska" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u0179"],
+                     @"zkreska" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u017A"],
+                     @"Zkropka" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u017B"],
+                     @"zkropka" : [MTMathAtom atomWithType:kMTMathAtomOrdinary value:@"\u017C"],
+
+
+                     
                      // Spacing
                      @"," : [[MTMathSpace alloc] initWithSpace:3],
                      @">" : [[MTMathSpace alloc] initWithSpace:4],
@@ -699,7 +710,30 @@ NSString *const MTSymbolDegree = @"\u00B0"; // \circ
                     @"gets" : @"leftarrow",
                     @"to" : @"rightarrow",
                     @"iff" : @"Longleftrightarrow",
-                    @"AA" : @"angstrom",
+                    @"Aa" : @"angstrom",
+                    
+                    //Polish signs part 2
+                    
+                    @"AA" : @"Aogonek",
+                    @"aa" : @"aogonek",
+                    @"CC" : @"Ckreska",
+                    @"cc" : @"ckreska",
+                    @"EE" : @"Eogonek",
+                    @"ee" : @"eogonek",
+                    @"LL" : @"Lkreska",
+                    @"ll" : @"lkreska",
+                    @"NN" : @"Nkreska",
+                    @"nn" : @"nkreska",
+                    @"OO" : @"Okreska",
+                    @"oo" : @"okreska",
+                    @"SS" : @"Skreska",
+                    @"ss" : @"skreska",
+                    @"ZZ" : @"Zkreska",
+                    @"zz" : @"zkreska",
+                    @"ZZZ" : @"Zkropka",
+                    @"zzz" : @"zkropka",
+
+
                     };
     }
     return aliases;
@@ -865,20 +899,15 @@ NSString *const MTSymbolDegree = @"\u00B0"; // \circ
         fontStyles = @{
                        @"mathnormal" : @(kMTFontStyleDefault),
                        @"mathrm": @(kMTFontStyleRoman),
-                       @"textrm": @(kMTFontStyleRoman),
                        @"rm": @(kMTFontStyleRoman),
                        @"mathbf": @(kMTFontStyleBold),
                        @"bf": @(kMTFontStyleBold),
-                       @"textbf": @(kMTFontStyleBold),
                        @"mathcal": @(kMTFontStyleCaligraphic),
                        @"cal": @(kMTFontStyleCaligraphic),
                        @"mathtt": @(kMTFontStyleTypewriter),
-                       @"texttt": @(kMTFontStyleTypewriter),
                        @"mathit": @(kMTFontStyleItalic),
-                       @"textit": @(kMTFontStyleItalic),
                        @"mit": @(kMTFontStyleItalic),
                        @"mathsf": @(kMTFontStyleSansSerif),
-                       @"textsf": @(kMTFontStyleSansSerif),
                        @"mathfrak": @(kMTFontStyleFraktur),
                        @"frak": @(kMTFontStyleFraktur),
                        @"mathbb": @(kMTFontStyleBlackboard),
